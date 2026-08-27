@@ -1,7 +1,5 @@
 """Runtime constants sourced from EBTA-DOC-1.0."""
 
-import os  # PREUVE VOLONTAIRE lot 3 : import inutilise, Ruff F401, sera reverte
-
 PROTOCOL_VERSION = "EBTA-DOC-1.0"
 ENGINE_VERSION = "EBTA-ENGINE-0.1.0"
 SCHEMA_VERSION = "2.0.0"
