@@ -1,0 +1,7 @@
+{
+  "orders": [],
+  "fills": [],
+  "positions": [],
+  "frictions": ["spread", "commission", "impact"],
+  "nav_reconciliation": "PASS"
+}

@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ebta.local/schemas/pit_data_declaration.schema.json",
+  "title": "EBTA point-in-time data declaration (G1 form)",
+  "description": "Formulaire G1 : declaration des donnees point-in-time avant splits et features. Source: SOP 09A; DN-025; PAQUET D'EXECUTION section 1.",
+  "schema_version": "1.0.0",
+  "x_normative_source": "Protocole/PAQUET D'EXECUTION EBTA.md section 1 (G1 form); SOP 09A; DN-025, DN-026, DN-027",
+  "x_translation_type": "CONTRACT_ENCODING",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "declaration_id",
+    "config_id",
+    "declared_at",
+    "data_sources",
+    "survivorship_controls",
+    "delisting_controls",
+    "corporate_action_controls",
+    "anti_leakage_controls_executed",
+    "purge_and_embargo_defined",
+    "transformations_learned_on_train_only"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "declaration_id": { "type": "string" },
+    "config_id": {
+      "type": "string",
+      "description": "Reference to the preregistered configuration (config_id from config.schema.json)."
+    },
+    "declared_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp; must be before any splits or feature engineering."
+    },
+    "data_sources": {
+      "type": "array",
+      "minItems": 1,
+      "description": "List of data sources with snapshot identification and availability metadata.",
+      "items": {
+        "type": "object",
+        "required": ["source_id", "snapshot_hash", "publication_timestamp", "ingestion_timestamp", "availability_timestamp"],
+        "properties": {
+          "source_id": { "type": "string" },
+          "snapshot_hash": { "type": "string" },
+          "publication_timestamp": { "type": "string" },
+          "ingestion_timestamp": { "type": "string" },
+          "availability_timestamp": { "type": "string" },
+          "vintage_reference": { "type": ["string", "null"] },
+          "latency_seconds": { "type": ["number", "null"] }
+        }
+      }
+    },
+    "asset_universe": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Pre-registered point-in-time asset universe when assets are selectable candidates."
+    },
+    "asset_universe_hash": {
+      "type": ["string", "null"],
+      "description": "Hash proving the point-in-time asset universe snapshot."
+    },
+    "asset_selection_rule": {
+      "type": ["string", "null"],
+      "description": "Pre-registered rule governing which declared assets are evaluated."
+    },
+    "survivorship_controls": {
+      "type": "object",
+      "required": ["covered", "method"],
+      "properties": {
+        "covered": { "type": "boolean" },
+        "method": { "type": "string" },
+        "notes": { "type": ["string", "null"] }
+      }
+    },
+    "delisting_controls": {
+      "type": "object",
+      "required": ["covered", "method"],
+      "properties": {
+        "covered": { "type": "boolean" },
+        "method": { "type": "string" }
+      }
+    },
+    "corporate_action_controls": {
+      "type": "object",
+      "required": ["covered", "method"],
+      "properties": {
+        "covered": { "type": "boolean" },
+        "method": { "type": "string" }
+      }
+    },
+    "macro_fundamental_alternative_versioned": {
+      "type": ["boolean", "null"],
+      "description": "True if macro/fundamental/alternative data is versioned by vintage (required when applicable)."
+    },
+    "anti_leakage_controls_executed": {
+      "type": "boolean",
+      "description": "True confirms anti-leakage controls have been run and archived (DN-025)."
+    },
+    "anti_leakage_archive_path": {
+      "type": ["string", "null"],
+      "description": "Path or reference to the archived anti-leakage control results."
+    },
+    "purge_and_embargo_defined": {
+      "type": "boolean",
+      "description": "True confirms purge and embargo are defined and consistent with data dependencies (DN-027)."
+    },
+    "purge_days": { "type": ["integer", "null"], "minimum": 0 },
+    "embargo_days": { "type": ["integer", "null"], "minimum": 0 },
+    "transformations_learned_on_train_only": {
+      "type": "boolean",
+      "description": "True confirms all learned transformations are fitted exclusively on Train_k (DN-026)."
+    },
+    "transformation_fit_log_hash": {
+      "type": ["string", "null"],
+      "description": "Hash of the transformation fit log proving Train_k-only fitting."
+    }
+  }
+}

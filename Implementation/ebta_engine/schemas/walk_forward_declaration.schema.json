@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ebta.local/schemas/walk_forward_declaration.schema.json",
+  "title": "EBTA Walk-Forward declaration (G3 form)",
+  "description": "Formulaire G3 : declaration du calendrier Walk-Forward avant le premier fold. Source: SOP 04; DN-001 to DN-004, DN-027; PAQUET D'EXECUTION section 1.",
+  "schema_version": "1.0.0",
+  "x_normative_source": "Protocole/PAQUET D'EXECUTION EBTA.md section 1 (G3 form) and section 2 (G3 checklist); SOP 04; DN-001, DN-002, DN-003, DN-004, DN-027",
+  "x_translation_type": "CONTRACT_ENCODING",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "declaration_id",
+    "config_id",
+    "declared_at",
+    "folds",
+    "no_oos_overlap_confirmed",
+    "no_additional_holdout_confirmed",
+    "information_stop_criterion"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "declaration_id": { "type": "string" },
+    "config_id": { "type": "string" },
+    "declared_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp; must be before any fold data is accessed."
+    },
+    "folds": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Complete fold schedule. OOS segments must not overlap (DN-001).",
+      "items": {
+        "type": "object",
+        "required": ["fold_id", "train_start", "train_end", "test_start", "test_end", "oos_start", "oos_end", "purge_days", "embargo_days", "warm_up_days"],
+        "properties": {
+          "fold_id": { "type": "string" },
+          "train_start": { "type": "string" },
+          "train_end": { "type": "string" },
+          "test_start": { "type": "string" },
+          "test_end": { "type": "string" },
+          "oos_start": { "type": "string" },
+          "oos_end": { "type": "string" },
+          "purge_days": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Purge window in days between segments (DN-027)."
+          },
+          "embargo_days": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Embargo window in days for residual dependencies (DN-027)."
+          },
+          "warm_up_days": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Indicator warm-up period excluded from evaluation."
+          }
+        }
+      }
+    },
+    "no_oos_overlap_confirmed": {
+      "type": "boolean",
+      "description": "True confirms that no OOS_k segment overlaps another (DN-001 / INV-001)."
+    },
+    "no_additional_holdout_confirmed": {
+      "type": "boolean",
+      "description": "True confirms no extra final holdout is added after the Walk-Forward OOS global (DN-002)."
+    },
+    "information_stop_criterion": {
+      "type": "object",
+      "required": ["criterion_type", "description"],
+      "description": "Preregistered criterion for stopping the Walk-Forward analysis (DN-004).",
+      "properties": {
+        "criterion_type": {
+          "type": "string",
+          "description": "Type of stop criterion, e.g. FIXED_FOLD_COUNT, FIXED_DATE, POWER_BASED."
+        },
+        "description": { "type": "string" },
+        "fixed_fold_count": { "type": ["integer", "null"], "minimum": 1 },
+        "fixed_end_date": { "type": ["string", "null"] }
+      }
+    },
+    "global_oos_start": {
+      "type": ["string", "null"],
+      "description": "Earliest OOS_k start date across all folds (for reference)."
+    },
+    "global_oos_end": {
+      "type": ["string", "null"],
+      "description": "Latest OOS_k end date across all folds (for reference)."
+    }
+  }
+}

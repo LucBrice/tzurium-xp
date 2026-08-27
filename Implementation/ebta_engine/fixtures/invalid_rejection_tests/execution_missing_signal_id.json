@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0.0",
+  "event_id": "EXEC-BAD-001",
+  "timestamp": "2026-01-01T00:00:00Z",
+  "fold_id": "FOLD-001",
+  "segment": "OOS",
+  "order_id": "ORD-001",
+  "fill_status": "FILLED",
+  "fill_id": "FILL-001",
+  "position_id": "POS-001",
+  "gross_pnl": 100.0,
+  "costs": 2.0,
+  "net_pnl": 98.0,
+  "nav_before": 10000.0,
+  "nav_after": 10098.0,
+  "execution_model_id": "MODEL-001"
+}

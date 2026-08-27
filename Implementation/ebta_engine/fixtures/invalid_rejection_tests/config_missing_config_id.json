@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.1.0",
+  "project_id": "PRJ-DEMO",
+  "research_family_id": "FAM-DEMO",
+  "hypothesis_id": "HYP-DEMO",
+  "process_version_id": "PROC-001",
+  "protocol_version": "EBTA-DOC-1.0",
+  "data_snapshots": [
+    {
+      "data_snapshot_id": "DS-001",
+      "available_at": "2026-01-01"
+    }
+  ],
+  "walk_forward_schedule": [
+    {
+      "fold_id": "F1",
+      "train": [
+        "2020-01-01",
+        "2022-12-31"
+      ],
+      "test": [
+        "2023-01-01",
+        "2023-06-30"
+      ],
+      "oos": [
+        "2023-07-01",
+        "2023-12-31"
+      ],
+      "purge_days": 5,
+      "embargo_days": 5,
+      "warmup_days": 20,
+      "policy": "rolling",
+      "information_cutoff": "2023-12-31"
+    }
+  ],
+  "candidate_space": {
+    "candidate_count": 10,
+    "complexity_definition": { "source": "fixture" },
+    "complexity_levels": [0, 1, 2]
+  },
+  "selection_rule": {
+    "rule": "max_sharpe"
+  },
+  "statistical_plan": {
+    "wrc_alpha": 0.05,
+    "wrc_bootstrap_replications": 1000,
+    "wrc_seed": 42,
+    "wrc_mean_block_length": 5,
+    "oos_bootstrap_replications": 1000,
+    "oos_seed": 42,
+    "oos_mean_block_length": 5
+  },
+  "execution_model": {
+    "central_scenario": "central",
+    "cost_model": {
+      "model_id": "fixture_costs",
+      "fill_model": "deterministic",
+      "fee_model": "fixed"
+    },
+    "instrument_config": {
+      "instrument_id": "FIXTURE.SIM",
+      "symbol": "FIXTURE",
+      "venue": "SIM"
+    }
+  },
+  "robustness_plan": {
+    "required_before_oos": true
+  },
+  "oos_opening_gate": {
+    "requires_pre_oos_sealed": true
+  },
+  "incubation_plan": {
+    "requires_validation_ready": true
+  },
+  "reproducibility_manifest": {
+    "package_stage": "PRE_OOS_SEALED"
+  },
+  "document_hash": "DEMO-HASH"
+}

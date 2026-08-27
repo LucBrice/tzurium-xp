@@ -1,0 +1,65 @@
+{
+  "INV-001": {
+    "oos_segments": [
+      { "id": "A", "start": "2023-01-01", "end": "2023-06-30" },
+      { "id": "B", "start": "2023-06-01", "end": "2023-12-31" }
+    ]
+  },
+  "INV-002": {
+    "pre_oos_sealed_at": "2023-01-02T00:00:00Z",
+    "oos_access_log": [{ "timestamp": "2023-01-01T00:00:00Z" }]
+  },
+  "INV-003": {
+    "oos_openings": [{ "wrc_local_status": "FAIL" }]
+  },
+  "INV-004": {
+    "influential_candidates": ["CAND-001", "CAND-002"],
+    "registered_candidates": ["CAND-001"]
+  },
+  "INV-005": {
+    "applicable_candidates": ["CAND-001", "CAND-002"],
+    "wrc_matrix_candidates": ["CAND-001"]
+  },
+  "INV-006": {
+    "transformation_fits": [{ "name": "scaler", "fit_segment": "Test_k" }]
+  },
+  "INV-007": {
+    "decision_events": [
+      { "decision_at": "2023-01-01T00:00:00Z", "data_available_at": "2023-01-02T00:00:00Z" }
+    ]
+  },
+  "INV-008": {
+    "expected_oos_days": ["2023-01-02", "2023-01-03"],
+    "oos_series_days": [{ "date": "2023-01-02", "status": "EXPOSED" }]
+  },
+  "INV-009": {
+    "bootstrap_sources": { "oos": "SAME_BOOTSTRAP", "wrc_test": "SAME_BOOTSTRAP" }
+  },
+  "INV-010": {
+    "gate_reports": {
+      "economic": "PASS",
+      "final": "PASS",
+      "final_components": ["economic"]
+    }
+  },
+  "INV-011": {
+    "robustness_checks": [{ "name": "post_oos_repair", "uses_observed_oos": true }]
+  },
+  "INV-012": {
+    "same_oos_reruns": [{ "rerun_id": "RERUN-001", "post_mortem_id": "" }]
+  },
+  "INV-013": {
+    "influential_modifications": [
+      { "modification_id": "MOD-001", "creates_new_candidate_or_version": false }
+    ]
+  },
+  "INV-014": {
+    "package_stages": ["PRE_OOS_SEALED", "INCUBATION_STARTED"]
+  },
+  "INV-015": {
+    "package_stages": ["PRE_OOS_SEALED", "VALIDATION_READY", "LIVE_LIMITED_STARTED"]
+  },
+  "INV-016": {
+    "manifest_hash_failures": ["hash mismatch: config.json"]
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ebta.local/schemas/robustness_plan.schema.json",
+  "title": "EBTA robustness plan (G5 preregistration form)",
+  "description": "Formulaire G5 : plan de tests de robustesse preregistres avant ouverture OOS_k. Source: SOP 05; DN-030; PAQUET D'EXECUTION section 1.",
+  "schema_version": "1.0.0",
+  "x_normative_source": "Protocole/PAQUET D'EXECUTION EBTA.md section 1 (G5 form) and section 2 (G5 checklist); SOP 05 sections 5, 17, 19, 21, 23; DN-030",
+  "x_translation_type": "CONTRACT_ENCODING",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "config_id",
+    "declared_at",
+    "scenarios",
+    "override_rule"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "plan_id": { "type": "string" },
+    "config_id": { "type": "string" },
+    "declared_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp; must be before OOS_k opening (DN-030)."
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Catalogue of preregistered stress-test scenarios. All three classifications (CENTRAL, PLAUSIBLE_BASE, EXTREME) should be present.",
+      "items": {
+        "type": "object",
+        "required": ["stress_id", "classification", "description", "blocking", "pass_condition"],
+        "properties": {
+          "stress_id": {
+            "type": "string",
+            "description": "Unique identifier for this scenario; referenced in the robustness result."
+          },
+          "classification": {
+            "type": "string",
+            "enum": ["CENTRAL", "PLAUSIBLE_BASE", "EXTREME"],
+            "description": "CENTRAL = base-case assumption; PLAUSIBLE_BASE = realistic deviation; EXTREME = tail stress."
+          },
+          "description": {
+            "type": "string",
+            "description": "Human-readable description of the stress scenario."
+          },
+          "blocking": {
+            "type": "boolean",
+            "description": "True if a non-PASS verdict for this scenario blocks OOS opening (DN-030)."
+          },
+          "pass_condition": {
+            "type": "string",
+            "description": "Preregistered quantitative or qualitative condition for PASS verdict."
+          },
+          "conditional_execution": {
+            "type": ["string", "null"],
+            "description": "Optional: condition under which this scenario is applicable. Null means always execute."
+          }
+        }
+      }
+    },
+    "override_rule": {
+      "type": "object",
+      "required": ["rule_description"],
+      "description": "Preregistered rule governing what happens when a blocking scenario fails (e.g., escalation procedure).",
+      "properties": {
+        "rule_description": { "type": "string" },
+        "escalation_path": { "type": ["string", "null"] }
+      }
+    },
+    "common_stress_baseline_executed": {
+      "type": ["boolean", "null"],
+      "description": "True if the mandatory common robustness baseline from SOP 05 has been included."
+    }
+  }
+}

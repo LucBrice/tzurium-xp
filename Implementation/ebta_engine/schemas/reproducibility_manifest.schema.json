@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ebta.local/schemas/reproducibility_manifest.schema.json",
+  "title": "EBTA reproducibility manifest",
+  "schema_version": "2.0.0",
+  "x_normative_source": "Protocole/PAQUET D'EXECUTION EBTA.md section 5; SOP 12",
+  "x_translation_type": "CONTRACT_ENCODING",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "code_hash",
+    "data_hash",
+    "timestamp",
+    "timestamp_source",
+    "project_id",
+    "hypothesis_id",
+    "research_family_id",
+    "protocol_version",
+    "package_stage",
+    "configuration",
+    "data_snapshots",
+    "code_environment",
+    "random_seeds",
+    "walk_forward_schedule",
+    "candidate_registry",
+    "test_matrices",
+    "oos_matrices",
+    "gate_reports",
+    "execution_logs",
+    "oos_access_logs",
+    "artifacts",
+    "reviewers",
+    "approvals"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "2.0.0" },
+    "code_hash": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "data_hash": { "type": "string", "pattern": "^[0-9A-F]{64}$" },
+    "timestamp": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z$" },
+    "timestamp_source": { "type": "string", "enum": ["INJECTED_FIXTURE_CLOCK", "RUNTIME_UTC"] },
+    "project_id": { "type": "string" },
+    "hypothesis_id": { "type": "string" },
+    "research_family_id": { "type": "string" },
+    "protocol_version": { "type": "string", "enum": ["EBTA-DOC-1.0"] },
+    "package_stage": {
+      "type": "string",
+      "enum": ["PRE_OOS_SEALED", "VALIDATION_READY", "DEPLOYMENT_CERTIFIED", "LIFECYCLE_ARCHIVED"]
+    },
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["config_id", "config_path", "config_hash"],
+      "properties": {
+        "config_id": { "type": "string" },
+        "config_path": { "type": "string" },
+        "config_hash": { "type": "string" }
+      }
+    },
+    "data_snapshots": { "type": "array", "minItems": 1, "items": { "type": "object" } },
+    "code_environment": { "type": "object" },
+    "random_seeds": { "type": "object" },
+    "walk_forward_schedule": { "type": "array", "minItems": 1, "items": { "type": "object" } },
+    "candidate_registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["registry_path", "research_family_id"],
+      "properties": {
+        "registry_path": { "type": "string" },
+        "research_family_id": { "type": "string" }
+      }
+    },
+    "test_matrices": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "oos_matrices": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "gate_reports": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "execution_logs": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "oos_access_logs": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "artifact_role", "artifact_type", "source_normative", "produced_by", "package_stage"],
+        "properties": {
+          "path": { "type": "string" },
+          "sha256": { "type": "string" },
+          "artifact_role": { "type": "string" },
+          "artifact_type": { "type": "string" },
+          "source_normative": { "type": "string" },
+          "produced_by": { "type": "string" },
+          "package_stage": {
+            "type": "string",
+            "enum": ["PRE_OOS_SEALED", "VALIDATION_READY", "DEPLOYMENT_CERTIFIED", "LIFECYCLE_ARCHIVED"]
+          }
+        }
+      }
+    },
+    "reviewers": { "type": "array", "items": { "type": "string" } },
+    "approvals": { "type": "array", "items": { "type": "string" } }
+  }
+}

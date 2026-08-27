@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ebta.local/schemas/incubation_plan.schema.json",
+  "title": "EBTA incubation and live plan (G12/G13 preregistration form)",
+  "description": "Formulaire G12/G13 : plan d'incubation et de passage live preregistre avant VALIDATION_READY. Source: SOP 11; DN-035, DN-036, DN-037; PAQUET D'EXECUTION section 1.",
+  "schema_version": "1.0.0",
+  "x_normative_source": "Protocole/PAQUET D'EXECUTION EBTA.md section 1 (G12/G13 form) and section 2 (G12, G13 checklists); SOP 11; DN-035, DN-036, DN-037",
+  "x_translation_type": "CONTRACT_ENCODING",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "plan_id",
+    "config_id",
+    "declared_at",
+    "paper_trading",
+    "monitoring",
+    "live_deployment",
+    "suspension_and_exit_criteria"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "plan_id": { "type": "string" },
+    "config_id": { "type": "string" },
+    "declared_at": {
+      "type": "string",
+      "description": "ISO-8601 timestamp; must be declared before VALIDATION_READY stage (DN-035)."
+    },
+    "paper_trading": {
+      "type": "object",
+      "required": ["duration_days_minimum", "success_criteria", "process_frozen"],
+      "description": "G12: paper trading incubation parameters.",
+      "properties": {
+        "duration_days_minimum": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Minimum number of paper trading days required before live approval."
+        },
+        "success_criteria": {
+          "type": "string",
+          "description": "Preregistered criteria for paper trading success."
+        },
+        "process_frozen": {
+          "type": "boolean",
+          "description": "True confirms the process is deployed as-is without alpha repair (DN-035)."
+        }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "required": ["type", "schedule_or_procedure"],
+      "description": "Preregistered monitoring plan (DN-037): statistical monitoring that controls repeated consultations.",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["CALENDAR_SCHEDULE", "SEQUENTIAL_PROCEDURE", "HYBRID"],
+          "description": "Type of monitoring. SEQUENTIAL_PROCEDURE must use alpha-spending or an equivalent preregistered stopping rule."
+        },
+        "schedule_or_procedure": {
+          "type": "string",
+          "description": "Description of the monitoring schedule or sequential stopping rule."
+        },
+        "alpha_spending_function": {
+          "type": ["string", "null"],
+          "description": "Required when type is SEQUENTIAL_PROCEDURE (e.g., O'Brien-Fleming, Pocock)."
+        },
+        "max_consultations": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "description": "Maximum number of monitoring lookups before final decision."
+        },
+        "operational_alerts": {
+          "type": ["string", "null"],
+          "description": "Preregistered conditions for operational alerts (drawdown, capacity breach, data anomaly)."
+        }
+      }
+    },
+    "live_deployment": {
+      "type": "object",
+      "required": ["initial_capital_limit", "sizing_policy", "kill_switch_condition"],
+      "description": "G13: live deployment parameters (DN-036).",
+      "properties": {
+        "initial_capital_limit": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Capital limit for initial live deployment (must be within validated capacity, DN-029)."
+        },
+        "capital_progression_rule": {
+          "type": ["string", "null"],
+          "description": "Preregistered rule for increasing capital, conditional on capacity validation."
+        },
+        "sizing_policy": {
+          "type": "string",
+          "description": "Reference to the preregistered sizing policy."
+        },
+        "kill_switch_condition": {
+          "type": "string",
+          "description": "Preregistered condition that triggers immediate halt of live trading."
+        },
+        "live_version_id": {
+          "type": ["string", "null"],
+          "description": "Exact process version to be deployed live (must match DEPLOYMENT_CERTIFIED package)."
+        }
+      }
+    },
+    "suspension_and_exit_criteria": {
+      "type": "object",
+      "required": ["suspension_conditions", "exit_conditions"],
+      "description": "Preregistered criteria for suspension, resumption, or permanent exit.",
+      "properties": {
+        "suspension_conditions": {
+          "type": "string",
+          "description": "Conditions triggering temporary suspension of live trading."
+        },
+        "resumption_conditions": {
+          "type": ["string", "null"],
+          "description": "Conditions required for safe resumption after suspension."
+        },
+        "exit_conditions": {
+          "type": "string",
+          "description": "Conditions triggering permanent withdrawal and archiving."
+        }
+      }
+    }
+  }
+}

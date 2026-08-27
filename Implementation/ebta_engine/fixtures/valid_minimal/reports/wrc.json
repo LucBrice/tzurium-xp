@@ -1,0 +1,9 @@
+{
+  "family_tested": "FAM-DEMO",
+  "bootstrap_method": "joint_zero_centered_wrc",
+  "alpha": 0.05,
+  "p_value": 0.01,
+  "verdict": "PASS",
+  "candidate_transmitted": "CAND-001",
+  "hashes": ["WRC-HASH-DEMO"]
+}

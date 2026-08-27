@@ -1,0 +1,4 @@
+[
+  { "date": "2023-01-02", "net_detrended_log_return": 0.001, "status": "EXPOSED" },
+  { "date": "2023-01-03", "net_detrended_log_return": 0.0, "status": "NO_MODEL" }
+]

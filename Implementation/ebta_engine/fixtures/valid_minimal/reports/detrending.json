@@ -1,0 +1,8 @@
+{
+  "artifact_type": "detrended_returns",
+  "segment_id": "OOS-GLOBAL",
+  "mean_primary_return": 0.001,
+  "observations": [
+    { "index": 0, "economic_return": 0.001, "detrended_return": 0.001 }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "concatenated_series": "series/oos_primary_returns.json",
+  "confidence_interval": "stationary_block_bootstrap",
+  "power": 0.8,
+  "statistical_verdict": "PASS"
+}

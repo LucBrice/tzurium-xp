@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plan_id": "ROB-BAD-001",
+  "config_id": "CFG-001",
+  "declared_at": "2026-01-01T00:00:00Z",
+  "scenarios": [
+    {
+      "stress_id": "S001",
+      "classification": "EXTREME",
+      "description": "Tail stress only",
+      "blocking": true,
+      "pass_condition": "Sharpe > 0"
+    }
+  ],
+  "override_rule": {
+    "rule_description": "Escalate to committee"
+  }
+}

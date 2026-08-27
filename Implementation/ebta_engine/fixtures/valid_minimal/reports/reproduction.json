@@ -1,0 +1,5 @@
+{
+  "environment": "fixture",
+  "commands": ["python -m unittest discover -s Implementation/ebta_engine/tests -t Implementation"],
+  "verdict": "PASS"
+}

@@ -1,0 +1,13 @@
+{
+  "artifact_type": "ml_manifest",
+  "manifest_id": "ML-DEMO-001",
+  "train_segment": "Train_k",
+  "features": ["ret_1"],
+  "transformations": [
+    { "name": "standardize", "fit_segment": "Train_k" }
+  ],
+  "hyperparameters": { "depth": 1 },
+  "seeds": [1],
+  "complexity_levels": [1],
+  "selection_rule": "max_test_score"
+}

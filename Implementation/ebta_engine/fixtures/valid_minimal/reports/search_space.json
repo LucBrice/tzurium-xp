@@ -1,0 +1,33 @@
+{
+  "artifact_type": "search_space",
+  "research_family_id": "FAM-DEMO",
+  "fold_id": "FOLD-001",
+  "search_type": "parametric",
+  "candidate_count": 1,
+  "canonical_hash": "SPACE-DEMO",
+  "no_model_policy": "NO_MODEL",
+  "candidates": [
+    {
+      "candidate_id": "CAND-001",
+      "research_family_id": "FAM-DEMO",
+      "fold_id": "FOLD-001",
+      "canonical_spec": { "logic": "demo", "parameters": { "lookback": 5 } },
+      "parameters": { "lookback": 5 },
+      "complexity": 1
+    }
+  ],
+  "canonical_json": "[{\"logic\":\"demo\",\"parameters\":{\"lookback\":5}}]",
+  "pre_registration": {
+    "universe_snapshot_id": "DATA-DEMO-001",
+    "universe_snapshot_hash": "DATA-DEMO-HASH",
+    "budget": { "max_candidates": 1 },
+    "stop_rule": "evaluate_preregistered_grid_once",
+    "seeds": [1],
+    "selection_metric": "mean_net_detrended_log_return",
+    "cost_model": "tradable_net",
+    "validity_criteria": ["train_only_calibration"],
+    "stability_criteria": ["lower_complexity_tie_break"],
+    "transfer_rule": "mechanical_train_to_test_then_selected_candidate_to_oos",
+    "missing_fields": []
+  }
+}

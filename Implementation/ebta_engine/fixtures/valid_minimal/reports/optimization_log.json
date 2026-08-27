@@ -1,0 +1,11 @@
+{
+  "artifact_type": "optimization_log",
+  "fold_id": "FOLD-001",
+  "segment": "Train_k",
+  "representatives": [
+    { "candidate_id": "CAND-001", "complexity": 1, "train_score": 0.01 }
+  ],
+  "evaluations": [
+    { "candidate_id": "CAND-001", "status": "EVALUATED", "train_score": 0.01 }
+  ]
+}

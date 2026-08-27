@@ -1,0 +1,10 @@
+{
+  "artifact_type": "candidate_matrix",
+  "fold_id": "FOLD-001",
+  "candidate_ids": ["CAND-001"],
+  "dates": ["2022-01-03", "2022-01-04"],
+  "row_count": 2,
+  "matrix": {
+    "CAND-001": [0.01, 0.02]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "plan": "pre_oos_common_stress_tests",
+  "scenarios": ["CENTRAL", "PLAUSIBLE_BASE", "EXTREME"],
+  "verdict": "PASS",
+  "variants_influential": [],
+  "proofs": ["ROBUSTNESS-HASH-DEMO"]
+}

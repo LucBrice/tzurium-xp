@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "declaration_id": "PIT-BAD-001",
+  "config_id": "CFG-001",
+  "declared_at": "2026-01-01T00:00:00Z",
+  "survivorship_controls": {
+    "covered": true,
+    "method": "universe_refresh"
+  },
+  "delisting_controls": {
+    "covered": true,
+    "method": "price_adjustment"
+  },
+  "corporate_action_controls": {
+    "covered": true,
+    "method": "adjusted_prices"
+  },
+  "anti_leakage_controls_executed": true,
+  "purge_and_embargo_defined": true,
+  "transformations_learned_on_train_only": true
+}

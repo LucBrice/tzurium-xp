@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.1.0",
+  "config_id": "CFG-DEMO-INVALID",
+  "research_family_id": "FAM-DEMO",
+  "hypothesis_id": "HYP-DEMO",
+  "process_version_id": "PROC-DEMO-001",
+  "protocol_version": "EBTA-DOC-1.0",
+  "data_snapshots": [],
+  "walk_forward_schedule": [],
+  "candidate_space": {
+    "complexity_definition": { "source": "fixture" },
+    "complexity_levels": [0]
+  },
+  "selection_rule": {},
+  "statistical_plan": {},
+  "execution_model": {
+    "cost_model": {
+      "model_id": "fixture_costs",
+      "fill_model": "deterministic",
+      "fee_model": "fixed"
+    },
+    "instrument_config": {
+      "instrument_id": "FIXTURE.SIM",
+      "symbol": "FIXTURE",
+      "venue": "SIM"
+    }
+  },
+  "robustness_plan": {},
+  "oos_opening_gate": {},
+  "incubation_plan": {},
+  "reproducibility_manifest": {},
+  "document_hash": "INVALID"
+}

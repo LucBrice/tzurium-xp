@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ebta.local/schemas/bias_incident.schema.json",
+  "title": "EBTA G-BIAS incident event",
+  "schema_version": "1.0.0",
+  "x_normative_source": "Protocole/SOP 13 - Gouvernance des biais humains et incidents méthodologiques.md; Protocole/TEMPLATE - Incident de biais EBTA.md",
+  "x_translation_type": "CONTRACT_ENCODING",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "incident_id",
+    "timestamp",
+    "project_id",
+    "research_family_id",
+    "candidate_id",
+    "fold_id",
+    "phase",
+    "bias_id",
+    "bias_type",
+    "detected_by",
+    "evidence_path",
+    "severity",
+    "oos_state",
+    "decision",
+    "reviewer",
+    "status"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "incident_id": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "project_id": { "type": "string" },
+    "research_family_id": { "type": "string" },
+    "candidate_id": { "type": "string" },
+    "fold_id": { "type": "string" },
+    "phase": {
+      "type": "string",
+      "enum": ["TRAIN", "TEST", "TEST_PRE_OOS", "PRE_OOS", "OOS", "POST_OOS", "LIVE"]
+    },
+    "bias_id": { "type": "string" },
+    "bias_type": { "type": "string" },
+    "detected_by": { "type": "string" },
+    "evidence_path": { "type": "string" },
+    "severity": {
+      "type": "string",
+      "enum": ["LEVEL_0", "LEVEL_1", "LEVEL_2", "LEVEL_3", "LEVEL_4", "LEVEL_5"]
+    },
+    "oos_state": {
+      "type": "string",
+      "enum": ["NOT_OPENED", "SEALED", "AUTHORIZED", "OPENED", "BURNED", "NOT_APPLICABLE"]
+    },
+    "decision": { "type": "string" },
+    "reviewer": { "type": ["string", "null"] },
+    "status": {
+      "type": "string",
+      "enum": ["OPEN", "RESOLVED", "FAIL", "INCONCLUSIVE", "BURNED"]
+    }
+  }
+}

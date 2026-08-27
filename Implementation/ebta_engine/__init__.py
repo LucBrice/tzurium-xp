@@ -1,0 +1,4 @@
+"""EBTA Engine Core runtime package."""
+
+ENGINE_VERSION = "EBTA-ENGINE-0.1.0"
+SUPPORTED_PROTOCOL_VERSIONS = {"EBTA-DOC-1.0", "EBTA-DOC-1.1"}

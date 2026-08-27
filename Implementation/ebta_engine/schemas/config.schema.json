@@ -1,0 +1,206 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ebta.local/schemas/config.schema.json",
+  "title": "EBTA preregistered configuration",
+  "schema_version": "1.1.0",
+  "x_normative_source": "Protocole/PAQUET D'EXECUTION EBTA.md section 3.1; Protocole/TEMPLATE - Configuration préenregistrée d'une recherche EBTA.md",
+  "x_translation_type": "CONTRACT_ENCODING",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "config_id",
+    "project_id",
+    "research_family_id",
+    "hypothesis_id",
+    "process_version_id",
+    "protocol_version",
+    "data_snapshots",
+    "walk_forward_schedule",
+    "candidate_space",
+    "selection_rule",
+    "statistical_plan",
+    "execution_model",
+    "robustness_plan",
+    "oos_opening_gate",
+    "incubation_plan",
+    "reproducibility_manifest",
+    "document_hash"
+  ],
+  "properties": {
+    "schema_version": { "type": "string", "const": "1.1.0" },
+    "config_id": { "type": "string" },
+    "project_id": { "type": "string" },
+    "research_family_id": { "type": "string" },
+    "hypothesis_id": { "type": "string" },
+    "process_version_id": { "type": "string" },
+    "protocol_version": { "type": "string", "enum": ["EBTA-DOC-1.0", "EBTA-DOC-1.1"] },
+    "data_snapshots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["data_snapshot_id", "available_at"],
+        "properties": {
+          "data_snapshot_id": { "type": "string" },
+          "available_at": { "type": "string" }
+        }
+      }
+    },
+    "walk_forward_schedule": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": [
+          "fold_id",
+          "train",
+          "test",
+          "oos",
+          "purge_days",
+          "embargo_days",
+          "warmup_days",
+          "policy",
+          "information_cutoff"
+        ],
+        "properties": {
+          "fold_id": { "type": "string" },
+          "train": { "$ref": "#/$defs/date_range" },
+          "test": { "$ref": "#/$defs/date_range" },
+          "oos": { "$ref": "#/$defs/date_range" },
+          "purge_days": { "type": "integer", "minimum": 0 },
+          "embargo_days": { "type": "integer", "minimum": 0 },
+          "warmup_days": { "type": "integer", "minimum": 0 },
+          "policy": { "type": "string", "enum": ["rolling", "expanding", "ROLLING", "EXPANDING"] },
+          "information_cutoff": { "type": "string" }
+        }
+      }
+    },
+    "candidate_space": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["candidate_count", "complexity_definition", "complexity_levels"],
+      "properties": {
+        "candidate_count": { "type": "integer", "minimum": 1 },
+        "complexity_definition": { "type": "object", "additionalProperties": true },
+        "complexity_levels": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "integer" }
+        },
+        "asset_universe": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "asset_selection_axis": { "type": ["string", "null"] },
+        "asset_selection_rule": { "type": ["string", "null"] },
+        "asset_candidate_count": {
+          "type": ["object", "null"],
+          "additionalProperties": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "selection_rule": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["rule"],
+      "properties": {
+        "rule": { "type": "string" }
+      }
+    },
+    "statistical_plan": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "wrc_alpha",
+        "wrc_bootstrap_replications",
+        "wrc_seed",
+        "wrc_mean_block_length",
+        "oos_bootstrap_replications",
+        "oos_seed",
+        "oos_mean_block_length"
+      ],
+      "properties": {
+        "wrc_alpha": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+        "wrc_bootstrap_replications": { "type": "integer", "minimum": 1 },
+        "wrc_seed": { "type": "integer" },
+        "wrc_mean_block_length": { "type": "integer", "minimum": 1 },
+        "oos_bootstrap_replications": { "type": "integer", "minimum": 1 },
+        "oos_seed": { "type": "integer" },
+        "oos_mean_block_length": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "execution_model": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["central_scenario", "cost_model", "instrument_config"],
+      "properties": {
+        "central_scenario": { "type": "string" },
+        "cost_model": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["model_id", "fill_model", "fee_model"],
+          "properties": {
+            "model_id": { "type": "string", "minLength": 1 },
+            "fill_model": { "type": "string", "minLength": 1 },
+            "fee_model": { "type": "string", "minLength": 1 }
+          }
+        },
+        "instrument_config": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["instrument_id", "symbol", "venue"],
+          "properties": {
+            "instrument_id": { "type": "string", "minLength": 1 },
+            "symbol": { "type": "string", "minLength": 1 },
+            "venue": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "robustness_plan": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["required_before_oos"],
+      "properties": {
+        "required_before_oos": { "type": "boolean" }
+      }
+    },
+    "oos_opening_gate": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["requires_pre_oos_sealed"],
+      "properties": {
+        "requires_pre_oos_sealed": { "type": "boolean" }
+      }
+    },
+    "incubation_plan": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["requires_validation_ready"],
+      "properties": {
+        "requires_validation_ready": { "type": "boolean" }
+      }
+    },
+    "reproducibility_manifest": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["package_stage"],
+      "properties": {
+        "package_stage": { "type": "string" }
+      }
+    },
+    "document_hash": { "type": "string" }
+  },
+  "$defs": {
+    "date_range": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 2,
+      "items": { "type": "string" }
+    }
+  }
+}

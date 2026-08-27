@@ -1,0 +1,7 @@
+{
+  "artifact_type": "complexity_selection",
+  "status": "PASS",
+  "test_segment": "Test_k",
+  "selected_candidate_id": "CAND-001",
+  "selection_rule": "max_test_score_then_lower_complexity"
+}

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ebta.local/schemas/strategy_payload.schema.json",
+  "title": "Native EBTA StrategyPayload",
+  "schema_version": "1.1.0",
+  "x_translation_type": "IMPLEMENTATION_DETAIL",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "asset",
+    "timeframe",
+    "strategy_family",
+    "payload_code",
+    "direction",
+    "entry_level",
+    "entry_criterion",
+    "bias_filter",
+    "time_filter",
+    "session",
+    "exit_criterion",
+    "risk_model",
+    "sizing_model",
+    "parameters",
+    "payload_version",
+    "payload_hash"
+  ],
+  "properties": {
+    "asset": { "type": "string", "minLength": 1 },
+    "timeframe": { "type": "string" },
+    "strategy_family": { "type": "string" },
+    "payload_code": { "type": "string", "minLength": 1 },
+    "direction": { "type": "string" },
+    "entry_level": { "type": "string" },
+    "entry_criterion": { "$ref": "#/$defs/criterion" },
+    "bias_filter": { "type": "string" },
+    "time_filter": { "type": "string" },
+    "session": { "type": "string", "enum": ["all", "asia", "london", "us"] },
+    "exit_criterion": { "$ref": "#/$defs/criterion" },
+    "risk_model": { "type": "string" },
+    "sizing_model": { "type": "string" },
+    "parameters": { "type": "object", "additionalProperties": true },
+    "payload_version": { "type": "string" },
+    "payload_hash": { "type": "string", "minLength": 64, "maxLength": 64 }
+  },
+  "$defs": {
+    "criterion": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["criterion_type", "rule_id", "parameters"],
+      "properties": {
+        "criterion_type": { "type": "string", "minLength": 1 },
+        "rule_id": { "type": "string", "minLength": 1 },
+        "parameters": { "type": "object", "additionalProperties": true }
+      }
+    }
+  }
+}

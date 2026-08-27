@@ -1,0 +1,10 @@
+EBTA — TZURIUM XP
+Copyright 2026 [titulaire du copyright a confirmer avant publication]
+
+This product includes software from the EBTA (Evidence-Based Technical
+Analysis) project, distributed under the Apache License, Version 2.0.
+
+The methodology this software implements draws on published work by
+David Aronson ("Evidence-Based Technical Analysis"), cited for reference;
+this repository contains an independent implementation, not a copy of
+that work.

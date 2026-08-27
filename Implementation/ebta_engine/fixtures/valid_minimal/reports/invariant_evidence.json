@@ -1,0 +1,46 @@
+{
+  "oos_segments": [
+    { "id": "OOS-001", "start": "2023-01-01", "end": "2023-12-31" },
+    { "id": "OOS-002", "start": "2024-01-01", "end": "2024-12-31" }
+  ],
+  "pre_oos_sealed_at": "2023-01-01T00:00:00Z",
+  "oos_access_log": [
+    { "timestamp": "2023-01-02T00:00:00Z", "fold_id": "FOLD-001" }
+  ],
+  "oos_openings": [
+    { "fold_id": "FOLD-001", "wrc_local_status": "PASS" }
+  ],
+  "influential_candidates": ["CAND-001"],
+  "registered_candidates": ["CAND-001"],
+  "applicable_candidates": ["CAND-001"],
+  "wrc_matrix_candidates": ["CAND-001"],
+  "transformation_fits": [
+    { "name": "scaler", "fit_segment": "Train_k" }
+  ],
+  "decision_events": [
+    { "decision_at": "2023-01-02T00:00:00Z", "data_available_at": "2023-01-01T00:00:00Z" }
+  ],
+  "expected_oos_days": ["2023-01-02", "2023-01-03"],
+  "oos_series_days": [
+    { "date": "2023-01-02", "status": "EXPOSED" },
+    { "date": "2023-01-03", "status": "NO_MODEL" }
+  ],
+  "bootstrap_sources": { "oos": "OOS_STATIONARY_BLOCK", "wrc_test": "WRC_JOINT_ZERO_CENTERED" },
+  "gate_reports": {
+    "statistical": "PASS",
+    "economic": "PASS",
+    "final": "PASS",
+    "final_components": ["statistical", "economic"]
+  },
+  "robustness_checks": [
+    { "name": "stress_pre_oos", "uses_observed_oos": false }
+  ],
+  "same_oos_reruns": [
+    { "rerun_id": "RERUN-TECH-001", "post_mortem_id": "PM-001" }
+  ],
+  "influential_modifications": [
+    { "modification_id": "MOD-001", "creates_new_candidate_or_version": true }
+  ],
+  "package_stages": ["PRE_OOS_SEALED", "VALIDATION_READY", "INCUBATION_STARTED", "DEPLOYMENT_CERTIFIED", "LIVE_LIMITED_STARTED"],
+  "manifest_hash_failures": []
+}

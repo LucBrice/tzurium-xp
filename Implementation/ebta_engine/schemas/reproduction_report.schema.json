@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ebta.local/schemas/reproduction_report.schema.json",
+  "title": "EBTA independent reproduction report",
+  "description": "Rapport de reproduction independante soumis par un tiers avant VALIDATION_READY (G11). Source: SOP 12; DN-039; INV-016.",
+  "schema_version": "1.0.0",
+  "x_normative_source": "Protocole/PAQUET D'EXECUTION EBTA.md section 4 (rapport de reproduction); SOP 12; DN-039, DN-041; INV-016",
+  "x_translation_type": "CONTRACT_ENCODING",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "report_id",
+    "config_id",
+    "original_manifest_hash",
+    "reproduced_artefact_hashes",
+    "environment",
+    "commands",
+    "verdict"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "report_id": { "type": "string" },
+    "config_id": {
+      "type": "string",
+      "description": "Reference to the preregistered configuration being reproduced."
+    },
+    "original_manifest_hash": {
+      "type": "string",
+      "description": "SHA-256 hash of the original reproducibility_manifest.json that this report validates against."
+    },
+    "reproduced_artefact_hashes": {
+      "type": "object",
+      "description": "Map from artefact name to SHA-256 hash produced by the independent reproduction run.",
+      "additionalProperties": { "type": "string" },
+      "minProperties": 1
+    },
+    "environment": {
+      "type": "object",
+      "required": ["python_version", "os", "code_commit_hash"],
+      "description": "Full description of the reproducer's environment.",
+      "properties": {
+        "python_version": { "type": "string" },
+        "os": { "type": "string" },
+        "code_commit_hash": {
+          "type": "string",
+          "description": "Git commit hash of the code used for reproduction."
+        },
+        "dependency_hash": {
+          "type": ["string", "null"],
+          "description": "Hash of the requirements/lockfile used."
+        },
+        "hardware_notes": { "type": ["string", "null"] }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ordered list of commands executed to reproduce the results.",
+      "items": { "type": "string" }
+    },
+    "tolerances": {
+      "type": "object",
+      "description": "Optional: map from artefact name to maximum acceptable numeric delta for floating-point results.",
+      "additionalProperties": { "type": "number", "minimum": 0 }
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["PASS", "FAIL", "INCONCLUSIVE"],
+      "description": "Reproducer's verdict."
+    },
+    "reproducer_id": {
+      "type": ["string", "null"],
+      "description": "Identifier of the independent reproducer (person or system)."
+    },
+    "reproduction_timestamp": {
+      "type": ["string", "null"],
+      "description": "ISO-8601 timestamp of the reproduction run."
+    },
+    "notes": {
+      "type": ["string", "null"],
+      "description": "Optional notes from the reproducer."
+    }
+  }
+}

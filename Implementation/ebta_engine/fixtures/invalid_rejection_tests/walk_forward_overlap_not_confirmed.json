@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "declaration_id": "WF-BAD-001",
+  "config_id": "CFG-001",
+  "declared_at": "2026-01-01T00:00:00Z",
+  "folds": [
+    {
+      "fold_id": "FOLD-001",
+      "train_start": "2020-01-01",
+      "train_end": "2022-12-31",
+      "test_start": "2023-01-01",
+      "test_end": "2023-06-30",
+      "oos_start": "2023-07-01",
+      "oos_end": "2023-12-31",
+      "purge_days": 5,
+      "embargo_days": 5,
+      "warm_up_days": 20
+    }
+  ],
+  "no_oos_overlap_confirmed": false,
+  "no_additional_holdout_confirmed": true,
+  "information_stop_criterion": {
+    "criterion_type": "FIXED_FOLD_COUNT",
+    "description": "1 fold"
+  }
+}
