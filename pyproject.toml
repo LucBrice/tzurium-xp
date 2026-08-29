@@ -1,3 +1,38 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tzurium-xp-ebta-engine"
+version = "0.0.0"
+description = "Public, standard-library EBTA validation and research engine"
+readme = "README.md"
+requires-python = ">=3.13"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+
+[tool.setuptools]
+package-dir = {"" = "Implementation"}
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["Implementation"]
+include = ["ebta_engine*"]
+
+[tool.setuptools.package-data]
+ebta_engine = [
+    "governance/*.json",
+    "schemas/*.json",
+    "fixtures/invalid_invariants/*.json",
+    "fixtures/invalid_missing_required/*.json",
+    "fixtures/invalid_rejection_tests/*.json",
+    "fixtures/invalid_rejection_tests/*.jsonl",
+    "fixtures/valid_minimal/*.json",
+    "fixtures/valid_minimal/*.jsonl",
+    "fixtures/valid_minimal/reports/*.json",
+    "fixtures/valid_minimal/series/*.json",
+]
+
 [tool.pyrefly]
 search-path = ['Implementation']
 

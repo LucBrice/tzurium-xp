@@ -1,8 +1,7 @@
 name: EBTA engine CI
 
-# CI autonome du depot public TZURIUM XP (snapshot assaini du noyau
-# ebta_engine, "code seulement", cf. .ai/governance/PUBLIC_EXPORT_MANIFEST.json
-# du depot prive source). Distincte de la CI du depot prive : n'installe pas
+# CI autonome de la source canonique publique TZURIUM XP (noyau ebta_engine,
+# enveloppe "code seulement"). Distincte de la CI du depot prive : n'installe pas
 # numpy/pandas (le noyau publie n'en importe aucun, ebta_private n'existe
 # pas ici), ne valide aucun checkpoint.json/tracking.json (absents ici),
 # et ajoute le declencheur pull_request (CA-019) absent de la CI privee.
@@ -34,6 +33,16 @@ jobs:
 
       - name: Install Ruff (CI tooling only, not a runtime dependency)
         run: python -m pip install ruff==0.16.2
+
+      - name: Build and install the public distribution
+        run: |
+          python -m pip wheel --no-deps --wheel-dir dist .
+          python -m pip install --force-reinstall dist/*.whl
+
+      - name: Verify the installed package outside the checkout
+        run: |
+          cd "$RUNNER_TEMP"
+          python "$GITHUB_WORKSPACE/tests/test_installed_package.py" --forbid-root "$GITHUB_WORKSPACE"
 
       - name: Run Pyrefly checks
         run: python -m pyrefly check Implementation/ebta_engine --output-format min-text
