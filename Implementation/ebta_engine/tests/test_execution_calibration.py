@@ -6,12 +6,20 @@ from pathlib import Path
 from ebta_engine.package_builder.execution_calibration import (
     broker_series_summary,
     build_execution_calibration,
+    load_broker_snapshot,
+    load_execution_calibration,
     quantile_from_frequencies,
     write_calibration,
 )
 
 
 class ExecutionCalibrationTests(unittest.TestCase):
+    def test_private_calibration_paths_are_never_inferred_from_the_install(self):
+        with self.assertRaisesRegex(ValueError, "explicit source path"):
+            load_broker_snapshot()
+        with self.assertRaisesRegex(ValueError, "explicit calibration path"):
+            load_execution_calibration()
+
     def test_frequency_quantiles_use_linear_interpolation(self):
         frequencies = {1000: 1, 2000: 2, 4000: 1}
         self.assertEqual(quantile_from_frequencies(frequencies, 0.5), 2.0)

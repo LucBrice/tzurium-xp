@@ -72,6 +72,14 @@ class GovernanceBiasTests(unittest.TestCase):
         self.assertEqual(json.loads(lines[0])["incident_id"], first["incident_id"])
         self.assertEqual(json.loads(lines[1])["incident_id"], second["incident_id"])
 
+    def test_incident_logger_requires_an_explicit_path(self):
+        with self.assertRaisesRegex(ValueError, "explicit log_path"):
+            append_incident(_valid_incident("BIAS-2026-0001"))
+        with self.assertRaisesRegex(ValueError, "explicit log_path"):
+            load_incidents()
+        with self.assertRaisesRegex(ValueError, "explicit log_path"):
+            load_open_incidents()
+
     def test_incident_logger_filters_and_loads_open_blocking_incidents(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             log_path = Path(temp_dir) / "INCIDENT_BIAS.jsonl"

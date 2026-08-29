@@ -14,8 +14,9 @@ from typing import Any
 from ebta_engine.schema_validation import ValidationError, validate
 
 
-IMPLEMENTATION_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_INCIDENT_LOG = IMPLEMENTATION_ROOT / "logs" / "INCIDENT_BIAS.jsonl"
+# Kept as a compatibility export, but deliberately unusable as an implicit
+# destination.  An installed library must never write inside its environment.
+DEFAULT_INCIDENT_LOG: None = None
 SCHEMA_PATH = Path(__file__).with_name("incident_schema.json")
 INCIDENT_SCHEMA_VERSION = "1.0.0"
 BLOCKING_SEVERITIES = {"LEVEL_2", "LEVEL_3", "LEVEL_4", "LEVEL_5"}
@@ -37,7 +38,7 @@ def append_incident(
         details = "; ".join(f"{error.path}: {error.message}" for error in errors)
         raise ValueError(f"Invalid G-BIAS incident: {details}")
 
-    target = Path(log_path) if log_path is not None else DEFAULT_INCIDENT_LOG
+    target = _explicit_log_path(log_path)
     target.parent.mkdir(parents=True, exist_ok=True)
     with target.open("a", encoding="utf-8", newline="\n") as handle:
         handle.write(json.dumps(normalized, sort_keys=True, separators=(",", ":")) + "\n")
@@ -69,7 +70,7 @@ def load_incidents(
     Raises IncidentLogNotFound if the log file does not exist (see that
     exception's docstring for why this is not the same as an empty log).
     """
-    target = Path(log_path) if log_path is not None else DEFAULT_INCIDENT_LOG
+    target = _explicit_log_path(log_path)
     if not target.exists():
         raise IncidentLogNotFound(f"Incident log not found: {target}")
 
@@ -116,3 +117,9 @@ def _normalize_incident(incident: dict[str, Any]) -> dict[str, Any]:
 
 def _matches_filters(incident: dict[str, Any], filters: dict[str, str]) -> bool:
     return all(incident.get(field) == expected for field, expected in filters.items())
+
+
+def _explicit_log_path(log_path: Path | str | None) -> Path:
+    if log_path is None:
+        raise ValueError("an explicit log_path is required; installed packages have no writable default")
+    return Path(log_path)

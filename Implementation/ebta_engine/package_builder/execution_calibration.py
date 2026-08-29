@@ -28,11 +28,6 @@ SCENARIO_QUANTILES = {
     "PLAUSIBLE_BASE": 0.95,
     "EXTREME": 0.99,
 }
-DEFAULT_SOURCE_PATH = (
-    Path(__file__).resolve().parents[2] / "calibrations" / "r5_r6" / "broker_sources.json"
-)
-
-
 @dataclass(frozen=True)
 class TickSpreadScan:
     file_id: str
@@ -44,7 +39,9 @@ class TickSpreadScan:
     spread_frequencies: dict[int, int]
 
 
-def load_broker_snapshot(path: Path = DEFAULT_SOURCE_PATH) -> dict[str, Any]:
+def load_broker_snapshot(path: Path | None = None) -> dict[str, Any]:
+    if path is None:
+        raise ValueError("an explicit source path is required for the private broker snapshot")
     payload = json.loads(path.read_text(encoding="utf-8"))
     if payload.get("schema_version") != "1.0.0":
         raise ValueError("unsupported broker source schema_version")
@@ -65,7 +62,9 @@ def load_broker_snapshot(path: Path = DEFAULT_SOURCE_PATH) -> dict[str, Any]:
 
 
 def load_execution_calibration(path: Path | None = None) -> dict[str, Any]:
-    calibration_path = path or DEFAULT_SOURCE_PATH.with_name("calibration.json")
+    if path is None:
+        raise ValueError("an explicit calibration path is required for the private calibration")
+    calibration_path = path
     payload = json.loads(calibration_path.read_text(encoding="utf-8"))
     if payload.get("schema_version") != CALIBRATION_SCHEMA_VERSION:
         raise ValueError("unsupported execution calibration schema_version")
@@ -177,8 +176,10 @@ def broker_series_summary(item: Mapping[str, Any]) -> dict[str, Any]:
 def build_execution_calibration(
     data_root: Path | str | None = None,
     *,
-    source_path: Path = DEFAULT_SOURCE_PATH,
+    source_path: Path | None = None,
 ) -> dict[str, Any]:
+    if source_path is None:
+        raise ValueError("an explicit source path is required for the private broker snapshot")
     root = resolve_data_root(data_root)
     source = load_broker_snapshot(source_path)
     tick_root = root / NASDAQ_TICK_DIRECTORY
@@ -321,7 +322,7 @@ def write_calibration(payload: Mapping[str, Any], output: Path) -> None:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--data-root", type=Path)
-    parser.add_argument("--source", type=Path, default=DEFAULT_SOURCE_PATH)
+    parser.add_argument("--source", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     return parser
 
