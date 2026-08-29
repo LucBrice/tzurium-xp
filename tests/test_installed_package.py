@@ -24,6 +24,15 @@ def main() -> int:
     distribution = importlib.metadata.distribution("tzurium-xp-ebta-engine")
     if distribution.version != "0.0.0":
         raise AssertionError(f"unexpected distribution version: {distribution.version}")
+    notice_entries = [
+        item for item in (distribution.files or ()) if item.as_posix().endswith("licenses/NOTICE")
+    ]
+    if len(notice_entries) != 1:
+        raise AssertionError(f"expected one installed NOTICE, found: {notice_entries}")
+    notice_path = Path(str(distribution.locate_file(notice_entries[0])))
+    notice_text = notice_path.read_text(encoding="utf-8")
+    if "Copyright 2026 TZURIUM XP" not in notice_text:
+        raise AssertionError("installed NOTICE does not contain the authorized copyright line")
 
     package_root = files("ebta_engine")
     required_resources = (
