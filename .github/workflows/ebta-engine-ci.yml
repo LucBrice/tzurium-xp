@@ -1,6 +1,6 @@
 name: EBTA engine CI
 
-# CI autonome de la source canonique publique TZURIUM XP (noyau ebta_engine,
+# CI autonome du miroir public genere TZURIUM XP (noyau ebta_engine,
 # enveloppe "code seulement"). Distincte de la CI du depot prive : n'installe pas
 # numpy/pandas (le noyau publie n'en importe aucun, ebta_private n'existe
 # pas ici), ne valide aucun checkpoint.json/tracking.json (absents ici),
