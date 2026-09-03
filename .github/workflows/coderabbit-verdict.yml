@@ -1,0 +1,59 @@
+name: CodeRabbit verdict
+
+"on":
+  pull_request:
+    types: [opened, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  coderabbit-verdict:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout candidate
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Read current-head reviews and threads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          gh api graphql \
+            -f query='query($owner: String!, $name: String!, $number: Int!) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  headRefOid
+                  reviews(first: 100) {
+                    pageInfo { hasNextPage }
+                    nodes { author { login } state commit { oid } }
+                  }
+                  reviewThreads(first: 100) {
+                    pageInfo { hasNextPage }
+                    nodes { isResolved isOutdated }
+                  }
+                }
+              }
+            }' \
+            -F owner="$REPOSITORY_OWNER" \
+            -F name="$REPOSITORY_NAME" \
+            -F number="$PR_NUMBER" \
+            > "$RUNNER_TEMP/coderabbit-evidence.json"
+
+      - name: Validate CodeRabbit evidence bound to candidate head
+        env:
+          EXPECTED_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: >-
+          python verification/coderabbit_verdict.py
+          --payload "$RUNNER_TEMP/coderabbit-evidence.json"
+          --expected-head "$EXPECTED_HEAD"
