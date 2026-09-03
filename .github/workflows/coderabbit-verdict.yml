@@ -1,0 +1,131 @@
+name: CodeRabbit verdict
+
+"on":
+  # Deliberately pull_request_target, not pull_request: GitHub always reads
+  # a pull_request_target workflow's OWN DEFINITION, and this job's checkout
+  # below, from the base ref (main) -- never from the PR branch. A PR can
+  # therefore never neutralize the verdict by weakening its own copy of
+  # verification/coderabbit_verdict.py or this workflow inside its own diff.
+  # The job never checks out or executes PR-controlled code either way: it
+  # only reads live review/thread evidence via the read-only GraphQL query
+  # below, bound to the PR's real current head SHA.
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+  # GitHub Actions has no trigger for a thread being marked resolved
+  # (pull_request_review_thread is a webhook event, not a supported workflow
+  # trigger), so a FAIL can otherwise stay stale after a human resolves every
+  # finding. workflow_dispatch only re-reads the live, real state of the
+  # named PR from the GitHub API below -- it cannot manufacture a PASS, and
+  # GitHub itself restricts manual dispatch to accounts with write access.
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number to recheck"
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  coderabbit-verdict:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve target PR and head SHA
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          DISPATCH_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            pr_number="$DISPATCH_PR_NUMBER"
+            head_sha=$(gh api "repos/$REPOSITORY_OWNER/$REPOSITORY_NAME/pulls/$pr_number" --jq '.head.sha')
+          else
+            pr_number="$EVENT_PR_NUMBER"
+            head_sha="$EVENT_PR_HEAD"
+          fi
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout trusted verifier from the base branch
+        # No ref override: defaults to the base branch this workflow itself
+        # was read from, never the PR head. This job must run the verifier
+        # as committed on main, not a PR-supplied copy of it.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Read current-head reviews and threads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.target.outputs.pr_number }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+
+          # Each connection is paginated independently via --paginate/--slurp
+          # (one JSON object per page) and merged below: a PR with more than
+          # 100 reviews or threads must still be provably checked, not just
+          # refused for being large.
+          reviews_pages=$(gh api graphql --paginate --slurp -f query='
+            query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  headRefOid
+                  reviews(first: 100, after: $endCursor) {
+                    pageInfo { hasNextPage endCursor }
+                    nodes { author { login } state commit { oid } }
+                  }
+                }
+              }
+            }' -F owner="$REPOSITORY_OWNER" -F name="$REPOSITORY_NAME" -F number="$PR_NUMBER")
+
+          threads_pages=$(gh api graphql --paginate --slurp -f query='
+            query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  reviewThreads(first: 100, after: $endCursor) {
+                    pageInfo { hasNextPage endCursor }
+                    nodes { isResolved isOutdated }
+                  }
+                }
+              }
+            }' -F owner="$REPOSITORY_OWNER" -F name="$REPOSITORY_NAME" -F number="$PR_NUMBER")
+
+          jq -n --argjson reviews "$reviews_pages" --argjson threads "$threads_pages" '
+            {
+              data: {
+                repository: {
+                  pullRequest: {
+                    headRefOid: ($reviews[0].data.repository.pullRequest.headRefOid),
+                    reviews: {
+                      pageInfo: {hasNextPage: false},
+                      nodes: [$reviews[].data.repository.pullRequest.reviews.nodes[]]
+                    },
+                    reviewThreads: {
+                      pageInfo: {hasNextPage: false},
+                      nodes: [$threads[].data.repository.pullRequest.reviewThreads.nodes[]]
+                    }
+                  }
+                }
+              }
+            }' > "$RUNNER_TEMP/coderabbit-evidence.json"
+
+      - name: Validate CodeRabbit evidence bound to candidate head
+        env:
+          EXPECTED_HEAD: ${{ steps.target.outputs.head_sha }}
+        run: >-
+          python verification/coderabbit_verdict.py
+          --payload "$RUNNER_TEMP/coderabbit-evidence.json"
+          --expected-head "$EXPECTED_HEAD"
