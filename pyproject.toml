@@ -11,6 +11,15 @@ requires-python = ">=3.13"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 
+[project.optional-dependencies]
+# CI tooling only, not a runtime dependency of ebta_engine (stdlib-only
+# core, see CLAUDE.md "What this repo is"): required to run
+# verification/verify_local.py, which validates checkpoint.json/
+# tracking.json against their JSON Schemas. Install with
+# `pip install .[verify]`. Same pinned version already authorized as CI
+# tooling on the private repository (.github/workflows/ebta-runtime-suite.yml).
+verify = ["jsonschema==4.23.0"]
+
 [tool.setuptools]
 package-dir = {"" = "Implementation"}
 include-package-data = false
