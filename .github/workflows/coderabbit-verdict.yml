@@ -1,0 +1,197 @@
+name: CodeRabbit verdict
+
+"on":
+  # Deliberately pull_request_target, not pull_request: GitHub always reads
+  # a pull_request_target workflow's OWN DEFINITION, and this job's checkout
+  # below, from the base ref (main) -- never from the PR branch. A PR can
+  # therefore never neutralize the verdict by weakening its own copy of
+  # verification/coderabbit_verdict.py or this workflow inside its own diff.
+  # The job never checks out or executes PR-controlled code either way: it
+  # only reads live review/thread evidence via the read-only GraphQL query
+  # below, bound to the PR's real current head SHA.
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, edited, dismissed]
+  pull_request_review_comment:
+    types: [created, edited, deleted]
+  # GitHub Actions has no trigger for a thread being marked resolved
+  # (pull_request_review_thread is a webhook event, not a supported workflow
+  # trigger), so a FAIL can otherwise stay stale after a human resolves every
+  # finding. workflow_dispatch only re-reads the live, real state of the
+  # named PR from the GitHub API below -- it cannot manufacture a PASS, and
+  # GitHub itself restricts manual dispatch to accounts with write access.
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "Pull request number to recheck"
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  # Scoped to the PR number regardless of which trigger fired: two runs
+  # racing on the same PR (e.g. a review submitted right after synchronize)
+  # must not interleave their evidence reads, and a stale run must never be
+  # allowed to overwrite a fresher verdict -- so the in-flight run is left to
+  # finish rather than cancelled.
+  group: coderabbit-verdict-${{ github.event.pull_request.number || github.event.inputs.pr_number }}
+  cancel-in-progress: false
+
+jobs:
+  coderabbit-verdict:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Resolve target PR and head SHA
+        id: target
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          EVENT_PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          DISPATCH_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            pr_number="$DISPATCH_PR_NUMBER"
+            # workflow_dispatch inputs are attacker-influenceable free text
+            # (any account with write access can type anything into the
+            # manual-trigger form): reject anything but a bare positive
+            # integer before it reaches the gh api path segment or the
+            # GITHUB_OUTPUT write below.
+            case "$pr_number" in
+              ''|*[!0-9]*)
+                echo "::error::pr_number must be a positive integer" >&2
+                exit 1
+                ;;
+            esac
+            head_sha=$(gh api "repos/$REPOSITORY_OWNER/$REPOSITORY_NAME/pulls/$pr_number" --jq '.head.sha')
+          else
+            pr_number="$EVENT_PR_NUMBER"
+            head_sha="$EVENT_PR_HEAD"
+          fi
+          echo "pr_number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout trusted verifier from the base branch
+        # Explicit ref, not relying on actions/checkout's default: only
+        # pull_request_target reads its own workflow definition and default
+        # checkout from the base branch. pull_request_review and
+        # pull_request_review_comment have no such guarantee -- their
+        # default ref resolves to the PR's own merge ref (refs/pull/N/merge,
+        # confirmed on a real run), which is exactly the PR-controlled code
+        # this job must never execute. Pinning the ref here closes that gap
+        # for every trigger in this workflow uniformly.
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+
+      - name: Read current-head reviews and threads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ steps.target.outputs.pr_number }}
+          REPOSITORY_OWNER: ${{ github.repository_owner }}
+          REPOSITORY_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+
+          # Each connection is paginated independently via --paginate/--slurp
+          # (one JSON object per page) and merged below: a PR with more than
+          # 100 reviews or threads must still be provably checked, not just
+          # refused for being large.
+          reviews_pages=$(gh api graphql --paginate --slurp -f query='
+            query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  headRefOid
+                  reviews(first: 100, after: $endCursor) {
+                    pageInfo { hasNextPage endCursor }
+                    nodes { author { login } state commit { oid } }
+                  }
+                }
+              }
+            }' -F owner="$REPOSITORY_OWNER" -F name="$REPOSITORY_NAME" -F number="$PR_NUMBER")
+
+          threads_pages=$(gh api graphql --paginate --slurp -f query='
+            query($owner: String!, $name: String!, $number: Int!, $endCursor: String) {
+              repository(owner: $owner, name: $name) {
+                pullRequest(number: $number) {
+                  headRefOid
+                  reviewThreads(first: 100, after: $endCursor) {
+                    pageInfo { hasNextPage endCursor }
+                    nodes { isResolved isOutdated }
+                  }
+                }
+              }
+            }' -F owner="$REPOSITORY_OWNER" -F name="$REPOSITORY_NAME" -F number="$PR_NUMBER")
+
+          # GraphQL can return HTTP 200 with a page that carries BOTH partial
+          # data and an "errors" entry (e.g. a field failed for that page
+          # only); gh's own handling of this is inconsistent across
+          # versions, so this does not rely on it. Every page of both
+          # connections is checked here, not only the first: the PR could in
+          # principle move between pages of the SAME connection, or between
+          # the two separate connections entirely.
+          validate_pages() {
+            local pages="$1" label="$2"
+            if jq -e '[.[] | has("errors")] | any' <<<"$pages" > /dev/null; then
+              echo "::error::$label: at least one paginated response page contains an errors field" >&2
+              exit 1
+            fi
+            local distinct_heads
+            distinct_heads=$(jq '[.[].data.repository.pullRequest.headRefOid] | unique | length' <<<"$pages")
+            if [ "$distinct_heads" != "1" ]; then
+              echo "::error::$label: headRefOid differs across paginated pages -- PR moved mid-fetch" >&2
+              exit 1
+            fi
+          }
+          validate_pages "$reviews_pages" "reviews"
+          validate_pages "$threads_pages" "reviewThreads"
+
+          reviews_head=$(jq -r '.[0].data.repository.pullRequest.headRefOid' <<<"$reviews_pages")
+          threads_head=$(jq -r '.[0].data.repository.pullRequest.headRefOid' <<<"$threads_pages")
+          if [ "$reviews_head" != "$threads_head" ]; then
+            echo "::error::reviews head ($reviews_head) and reviewThreads head ($threads_head) disagree -- PR moved mid-fetch" >&2
+            exit 1
+          fi
+
+          # hasNextPage is read from each connection's own LAST fetched page,
+          # never hardcoded: if --paginate ever stopped early (malformed
+          # cursor, API hiccup) this must still say true so the verifier
+          # refuses truncated evidence instead of treating it as complete.
+          jq -n --argjson reviews "$reviews_pages" --argjson threads "$threads_pages" '
+            {
+              data: {
+                repository: {
+                  pullRequest: {
+                    headRefOid: ($reviews[0].data.repository.pullRequest.headRefOid),
+                    reviews: {
+                      pageInfo: {hasNextPage: ($reviews[-1].data.repository.pullRequest.reviews.pageInfo.hasNextPage)},
+                      nodes: [$reviews[].data.repository.pullRequest.reviews.nodes[]]
+                    },
+                    reviewThreads: {
+                      pageInfo: {hasNextPage: ($threads[-1].data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage)},
+                      nodes: [$threads[].data.repository.pullRequest.reviewThreads.nodes[]]
+                    }
+                  }
+                }
+              }
+            }' > "$RUNNER_TEMP/coderabbit-evidence.json"
+
+      - name: Validate CodeRabbit evidence bound to candidate head
+        env:
+          EXPECTED_HEAD: ${{ steps.target.outputs.head_sha }}
+        run: >-
+          python verification/coderabbit_verdict.py
+          --payload "$RUNNER_TEMP/coderabbit-evidence.json"
+          --expected-head "$EXPECTED_HEAD"
