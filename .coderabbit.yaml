@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: "en-US"
+reviews:
+  profile: "assertive"
+  auto_review:
+    enabled: true
+    drafts: false
+  path_instructions:
+    - path: "Implementation/ebta_engine/**"
+      instructions: |
+        This public EBTA engine must remain Python standard-library only.
+        Flag every runtime dependency outside the Python standard library,
+        every silent fallback, and every path that can manufacture a PASS.
+        Treat persisted artifacts and external inputs as untrusted data.
+    - path: "verification/**"
+      instructions: |
+        Review fail-closed behavior, negative paths, SHA provenance, and
+        incomplete or stale evidence. Never infer success from missing data.
